@@ -1,0 +1,11 @@
+const express = require("express");
+const auth = require("../middleware/authMiddleware");
+const { authorizeRoles } = require("../middleware/roleMiddleware");
+const controller = require("../controllers/productController");
+const router = express.Router();
+router.use(auth);
+router.get("/", controller.getProducts);
+router.post("/", authorizeRoles("admin", "manager"), controller.createProduct);
+router.put("/:id", authorizeRoles("admin", "manager"), controller.updateProduct);
+router.delete("/:id", authorizeRoles("admin", "manager"), controller.deleteProduct);
+module.exports = router;

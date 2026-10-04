@@ -1,0 +1,84 @@
+StockSense read-only pre-import baseline
+Timestamp (UTC): 2026-10-04T09:08:44.231Z
+Database access: connected successfully; all operations below were read-only.
+
+PRODUCT BASELINE
+Total Product documents: 2330
+Sample SKUs exist: PASS
+RICE-5KG-001: _id=6ab6966cac28839a59b911b3; name="Rice 5kg"; price=350; costPrice=280; reorderLevel=10
+SHAMP-001: _id=6ab6971fac28839a59b911b6; name="Shampoo"; price=180; costPrice=140; reorderLevel=10
+BISC-001: _id=6ab696eeac28839a59b911b5; name="Biscuits"; price=30; costPrice=20; reorderLevel=10
+MILK-1L-001: _id=6ab696bbac28839a59b911b4; name="Milk 1L"; price=60; costPrice=48; reorderLevel=10
+
+STORE BASELINE
+Total Store documents: 42
+Dataset Store IDs present: 40/40
+Approved mapped dataset stores with valid coordinates: 37/37
+Unresolved codes present and without coordinates: 3/3
+Missing dataset Store codes: none
+Store records (_id | code | name | location):
+6ab69790ac28839a59b911b7 | (no code) | "Main Store" | "Chennai"
+6ab697a9ac28839a59b911b8 | (no code) | "Anna Nagar Store" | "Anna Nagar, Chennai"
+6abd02ee69438656fb33deeb | STR-1006 | "Amma Naana Supermarket" | "82/100, Pasumpon Muthuramalinga Thevar Road, Raja Annamalaipuram, Tamil Nadu 600018, India"
+6abd02ea69438656fb33dece | STR-1010 | "Freshco Supermarket" | "16/1, Sait Colony 1st St, Egmore, Chennai, Tamil Nadu 600008, India"
+6abd02ef69438656fb33deef | STR-1026 | "Smart Bazaar" | "L/2, Ambience Mall, SN UGF/36, LGF/32, Nelson Mandela Marg, Vasant Kunj, New Delhi, Delhi 110070, India"
+6abd02f069438656fb33def5 | STR-1038 | "Hiranandani Dmart" | "10-A, Orchard Ave, Hiranandani Gardens, Powai, Mumbai, Maharashtra 400076, India"
+6abd02ed69438656fb33dede | STR-1044 | "Ratnadeep Supermarket" | "H NO: 8, PLOT NO: F 11 & 12, Yousufguda Main Rd, near Vohra Towers, Rahmat Nagar, Madhura Nagar, Hyderabad, Telangana 500038, India"
+6abd02eb69438656fb33ded4 | STR-1074 | "More Supermarket - KORAMANGALA - 2" | "472, Adugodi Main Rd, Koramangala 8th Block, Koramangala, Bengaluru, Karnataka 560095, India"
+6abd02ec69438656fb33ded9 | STR-1075 | "Reliance SMART Bazaar" | "City Gold Center I, Sardar Patel Ring Rd, opposite Rapid Action Force Headquarters, Vastral, Ahmedabad, Gujarat 382418, India"
+6abd02ee69438656fb33dee9 | STR-1080 | "Star Bazaar" | "Ground Floor, Phoenix Marketcity, Pune-Nagar Rd, Viman Nagar, Pune, Maharashtra 411014, India"
+6abd02eb69438656fb33decf | STR-1082 | "Vijetha Supermarket - KPHB 6th Phase" | "KPHB 6th Phase Rd, Vidhura Vihar, Kukatpally, Hyderabad, Telangana 500085, India"
+6abd02ee69438656fb33deea | STR-1085 | "D-Mart" | "Grand Square Mall, 46, 1st Main Rd, V.O.C Nagar, Velachery, Chennai, Tamil Nadu 600042, India"
+6abd02ec69438656fb33dedd | STR-1094 | "Reliance SMART Bazaar" | "New Era Mill Compound, Mogul Ln, Matunga West, Mumbai, Maharashtra 400016, India"
+6abd02eb69438656fb33ded0 | STR-1105 | "LuLu Hypermarket" | "34/1000, Edapally, Kochi, Ernakulam, Kerala 682024, India"
+6abd02ef69438656fb33deee | STR-1107 | "Vishal Mega Mart" | "Plot No. 1, Elevated Ajmer Rd, opposite Government Hostel, Gopalbari, Jaipur, Rajasthan 302006, India"
+6abd02ed69438656fb33dee4 | STR-1109 | "DMART" | "Sirsi Road, Ganga Colony, Rajendra Nagar, Panchyawala, Jaipur, Rajasthan 302034, India"
+6abd02ec69438656fb33dedc | STR-1114 | "Reliance Smart Bazaar" | "Paschimanagari, Kothrud, Karve Nagar, Pune, Maharashtra 411038, India"
+6abd02ec69438656fb33ded7 | STR-1145 | "MORE Supermarket" | "Kamineni Hospital Road, Viveka Nanda Nagar, Mansoorabad, Hyderabad, Telangana 500068, India"
+6abd02ed69438656fb33dee2 | STR-1148 | "Star Bazaar" | "Vishal Tower Entrance Path, Prahladnagar, Ahmedabad, Gujarat 380015, India"
+6abd02ef69438656fb33def1 | STR-1149 | "Lulu Hypermarket" | "Salem-Kochi-Kanyakumari Road, Kochuveli, Thiruvananthapuram, Kerala 695001, India"
+6abd02eb69438656fb33ded1 | STR-1157 | "Vijetha Super Market" | "JP Nagar Road, Prasanth Nagar, Miyapur, Hyderabad, Telangana 500049, India"
+6abd02eb69438656fb33ded3 | STR-1163 | "DMart" | "Punyadham Ashram Road, Krushna Nagar, Kondhwa Budruk, Pune, Maharashtra 411048, India"
+6abd02ef69438656fb33def4 | STR-1194 | "Reliance Fresh" | "Sant Dnyaneshwar Mauli Marg, Nerul East, Navi Mumbai, Maharashtra 400614, India"
+6abd02ec69438656fb33deda | STR-1198 | "Nature's Basket" | "Road No. 2, Gandhi Nagar, Bandra East, Mumbai, Maharashtra 400017, India"
+6abd02ee69438656fb33dee8 | STR-1203 | "Nature's Basket" | "Cubic Mall parking exit, Wadavli Village, Chembur, Mumbai, Maharashtra 400074, India"
+6abd02ef69438656fb33def0 | STR-1219 | "Nature's Basket" | "Kavi Ram Basakhetre Road, Adarsh Nagar, Oshiwara, Mumbai, Maharashtra 400053, India"
+6abd02ee69438656fb33dee6 | STR-1222 | "Nature's Basket" | "TL Wasvani Road, Cuffe Parade, Mumbai, Maharashtra 400005, India"
+6abd02ee69438656fb33deec | STR-1229 | "Nature's Basket" | "Khwaja Abbas Marg, Juhu, Mumbai, Maharashtra 400049, India"
+6abd02eb69438656fb33ded5 | STR-1234 | "Ratnadeep supermarket" | "Himayath Nagar Road, Narayanguda, Hyderabad, Telangana 500029, India"
+6abd02ec69438656fb33dedb | STR-1235 | "STR-1235" | "Dataset Store"
+6abd02ed69438656fb33dedf | STR-1237 | "Ratnadeep Supermarket" | "Huda Techno Enclave Road, Vittal Rao Nagar, Madhapur, Hyderabad, Telangana 500081, India"
+6abd02eb69438656fb33ded2 | STR-1253 | "Ratnadeep SuperMarket" | "Gachibowli-Miyapur Highway, Whitefields, Kothaguda, Hyderabad, Telangana 500084, India"
+6abd02ee69438656fb33dee5 | STR-1255 | "Ratnadeep Supermarket" | "Road No. 1, Nanakramguda, Hyderabad, Telangana 500032, India"
+6abd02ec69438656fb33ded8 | STR-1305 | "Reliance Fresh" | "9008, Deshbandhu Gupta Road, Aram Bagh, Paharganj, Delhi 110055, India"
+6abd02ed69438656fb33dee1 | STR-1308 | "Reliance Fresh" | "Hariom Gahlot Marg, Dwarka, Delhi 110078, India"
+6abd02eb69438656fb33ded6 | STR-1335 | "Vishal Mega Mart" | "Jaipur Road, Shiv Nagar, Vidyadhar Nagar, Jaipur, Rajasthan 302001, India"
+6abd02ed69438656fb33dee3 | STR-1338 | "Spencer's Supermarket (bottom level)" | "Gariahat Road, Park Circus, Kolkata, West Bengal 700017, India"
+6abd02ed69438656fb33dee0 | STR-1344 | "STR-1344" | "Dataset Store"
+6abd02ef69438656fb33def2 | STR-1348 | "Reliance Smart" | "1402, Bannerghatta Road, Panduranga Nagar, Arekere, Bengaluru, Karnataka 560076, India"
+6abd02ef69438656fb33deed | STR-1350 | "Dorabjee's" | "Lane No. 7, Koregaon Park, Pune, Maharashtra 411001, India"
+6abd02ef69438656fb33def3 | STR-1353 | "STR-1353" | "Dataset Store"
+6abd02ee69438656fb33dee7 | STR-1369 | "Star Bazaar" | "Satellite Road, Ramdev Nagar, Ahmedabad, Gujarat 380015, India"
+
+OPERATIONAL INVENTORY BASELINE
+Total Inventory documents: 4
+Inventory records for sample products: 4
+product=6ab6966cac28839a59b911b3 (RICE-5KG-001) | store=6ab69790ac28839a59b911b7 (Main Store) | quantity=50 | reorderLevel=10 | lastUpdated=2026-09-25T16:00:20.870Z
+product=6ab696bbac28839a59b911b4 (MILK-1L-001) | store=6ab69790ac28839a59b911b7 (Main Store) | quantity=5 | reorderLevel=10 | lastUpdated=2026-09-25T15:49:29.019Z
+product=6ab696eeac28839a59b911b5 (BISC-001) | store=6ab69790ac28839a59b911b7 (Main Store) | quantity=35 | reorderLevel=10 | lastUpdated=2026-09-25T15:59:17.157Z
+product=6ab6971fac28839a59b911b6 (SHAMP-001) | store=6ab69790ac28839a59b911b7 (Main Store) | quantity=7 | reorderLevel=10 | lastUpdated=2026-09-29T17:49:24.242Z
+
+OPERATIONAL SALE BASELINE
+Total Sale documents: 2
+Total units sold: 6
+Total sales amount: 330
+
+HISTORICAL SALE BASELINE
+Total HistoricalSale documents: 125751
+
+HISTORICAL INVENTORY BASELINE
+Total HistoricalInventory documents: 284755
+
+DATABASE SAFETY
+Connection successful. No MongoDB documents were inserted, updated, deleted, or upserted.
+No credentials, tokens, or connection strings are included in this report.

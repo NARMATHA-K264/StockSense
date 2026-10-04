@@ -1,0 +1,11 @@
+const express = require("express");
+const auth = require("../middleware/authMiddleware");
+const { authorizeRoles } = require("../middleware/roleMiddleware");
+const controller = require("../controllers/storeController");
+const router = express.Router();
+router.use(auth);
+router.get("/", controller.getStores);
+router.post("/", authorizeRoles("admin", "manager"), controller.createStore);
+router.put("/:id", authorizeRoles("admin", "manager"), controller.updateStore);
+router.delete("/:id", authorizeRoles("admin", "manager"), controller.deleteStore);
+module.exports = router;

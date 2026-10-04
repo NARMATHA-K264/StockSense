@@ -1,0 +1,47 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+ml/venv/
+
+# IDE / editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build output
+dist/
+build/
+
+# Large raw datasets
+data/raw/*.csv
+
+# Python generated files
+.pytest_cache/
+.mypy_cache/
+
+# Old frontend backup
+frontend-BEFORE-UI-UPGRADE/
+
+# Development backup files
+*.backup.js
+*.backup.jsx
+*.before-historical.jsx
