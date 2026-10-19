@@ -11,7 +11,7 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const forecastRoutes = require('./routes/forecastRoutes');
 const replenishmentRoutes = require('./routes/replenishmentRoutes');
 const storeMapRoutes = require('./routes/storeMapRoutes');
-const { verifySmtpTransport } = require('./utils/invitationService');
+const { verifyEmailProvider } = require('./utils/invitationService');
 require('dotenv').config();
 require('dns').setDefaultResultOrder('ipv4first');
 
@@ -69,10 +69,10 @@ const startServer = async () => {
     console.log('Connected to MongoDB');
 
     try {
-      await verifySmtpTransport();
-      console.log('SMTP transporter ready');
-    } catch (smtpError) {
-      console.error('SMTP configuration error:', smtpError.message);
+      await verifyEmailProvider();
+      console.log('Email provider configured');
+    } catch (emailError) {
+      console.error('Email provider configuration error:', emailError.message);
     }
 
     app.listen(port, () => {
@@ -85,5 +85,4 @@ const startServer = async () => {
 };
 
 startServer();
-
 

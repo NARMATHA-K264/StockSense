@@ -1,5 +1,4 @@
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
 
 const DEFAULT_INVITATION_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -15,45 +14,44 @@ const buildInvitationUrl = (token) => {
   return `${normalizedBase}/set-password?token=${encodeURIComponent(token)}`;
 };
 
-const getSmtpConfig = () => ({
-  host: process.env.SMTP_HOST || process.env.EMAIL_HOST,
-  port: Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 587),
-  user: process.env.SMTP_USER || process.env.EMAIL_USER,
-  pass: process.env.SMTP_PASS || process.env.EMAIL_PASSWORD,
-  from: process.env.SMTP_FROM || process.env.EMAIL_FROM || "StockSense <noreply@stocksense.local>",
+const getEmailConfig = () => ({
+  apiKey: process.env.RESEND_API_KEY,
+  from: process.env.EMAIL_FROM,
 });
 
-const mailTransport = () => {
-  const { host, port, user, pass } = getSmtpConfig();
-
-  if (!host || !user || !pass) {
-    return null;
-  }
-
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure: Number(port) === 465,
-    auth: { user, pass },
-    tls: { rejectUnauthorized: false },
-  });
+const hasEmailConfig = () => {
+  const { apiKey, from } = getEmailConfig();
+  return Boolean(apiKey && from);
 };
 
-const verifySmtpTransport = async () => {
-  const transport = mailTransport();
-  if (!transport) {
-    throw new Error("SMTP configuration is missing. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM.");
+const verifyEmailProvider = async () => {
+  if (!hasEmailConfig()) {
+    throw new Error("Email provider configuration is missing. Set RESEND_API_KEY and EMAIL_FROM.");
   }
 
-  await transport.verify();
   return true;
 };
 
+const sendEmail = async ({ to, subject, html }) => {
+  const { apiKey, from } = getEmailConfig();
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ from, to, subject, html }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Email provider request failed with status ${response.status}`);
+  }
+};
+
 const sendInvitationEmail = async ({ name, email, role, invitationUrl }) => {
-  const transport = mailTransport();
   const appName = "StockSense";
 
-  if (!transport) {
+  if (!hasEmailConfig()) {
     if (process.env.NODE_ENV === "development") {
       return {
         accepted: false,
@@ -66,11 +64,7 @@ const sendInvitationEmail = async ({ name, email, role, invitationUrl }) => {
   }
 
   try {
-    const mail = {
-      from: getSmtpConfig().from,
-      to: email,
-      subject: "You're invited to StockSense",
-      html: `
+    const html = `
         <div style="font-family: Arial, sans-serif; line-height: 1.7; color: #0f172a; max-width: 640px; margin: 0 auto; padding: 24px; border: 1px solid #dfe7f5; border-radius: 12px; background: #f8fafc;">
           <h2 style="margin: 0 0 12px; color: #0f172a;">Welcome to ${appName}</h2>
           <p style="margin: 0 0 12px;">Hello ${name || "there"},</p>
@@ -83,10 +77,13 @@ const sendInvitationEmail = async ({ name, email, role, invitationUrl }) => {
           <p style="margin: 0 0 12px;">If you were not expecting this invitation, please contact your administrator.</p>
           <p style="margin: 16px 0 0; color: #475569;">Regards,<br />StockSense Team</p>
         </div>
-      `,
-    };
+      `;
 
-    await transport.sendMail(mail);
+    await sendEmail({
+      to: email,
+      subject: "You're invited to StockSense",
+      html,
+    });
 
     return {
       accepted: true,
@@ -104,15 +101,12 @@ const sendInvitationEmail = async ({ name, email, role, invitationUrl }) => {
 };
 
 const sendRemovalEmail = async ({ name, email }) => {
-  const transport = mailTransport();
-
-  if (!transport) {
+  if (!hasEmailConfig()) {
     return { accepted: false, message: "Removal email delivery is not configured." };
   }
 
   try {
-    await transport.sendMail({
-      from: getSmtpConfig().from,
+    await sendEmail({
       to: email,
       subject: "Your StockSense access has been removed",
       html: `
@@ -141,5 +135,5 @@ module.exports = {
   getInvitationExpiry,
   sendInvitationEmail,
   sendRemovalEmail,
-  verifySmtpTransport,
+  verifyEmailProvider,
 };
