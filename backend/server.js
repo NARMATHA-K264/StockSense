@@ -13,6 +13,8 @@ const replenishmentRoutes = require('./routes/replenishmentRoutes');
 const storeMapRoutes = require('./routes/storeMapRoutes');
 const { verifySmtpTransport } = require('./utils/invitationService');
 require('dotenv').config();
+require('dns').setDefaultResultOrder('ipv4first');
+
 
 const app = express();
 const port = process.env.PORT || 5000;
