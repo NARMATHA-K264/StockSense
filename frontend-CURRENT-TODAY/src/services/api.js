@@ -30,6 +30,7 @@ export const api = {
     list: () => apiRequest("/auth/users"),
     create: (body) => apiRequest("/auth/register", { method: "POST", body: JSON.stringify(body) }),
     resendInvitation: (body) => apiRequest("/auth/resend-invitation", { method: "POST", body: JSON.stringify(body) }),
+    getInvitationLink: (body) => apiRequest("/auth/invitation-link", { method: "POST", body: JSON.stringify(body) }),
     remove: (body) => apiRequest("/auth/remove-user", { method: "POST", body: JSON.stringify(body) }),
   },
   products: { list: () => apiRequest("/products"), create: (body) => apiRequest("/products", { method: "POST", body: JSON.stringify(body) }), update: (id, body) => apiRequest(`/products/${id}`, { method: "PUT", body: JSON.stringify(body) }), remove: (id) => apiRequest(`/products/${id}`, { method: "DELETE" }) },

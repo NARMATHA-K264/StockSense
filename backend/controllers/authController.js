@@ -49,7 +49,7 @@ const createPendingEmployee = async ({ name, email, role }) => {
 
   return {
     user,
-    invitationUrl: process.env.NODE_ENV === "development" && emailResult.invitationUrl ? emailResult.invitationUrl : undefined,
+    invitationUrl,
     emailAccepted: emailResult.accepted,
   };
 };
@@ -209,28 +209,43 @@ const setPassword = async (req, res) => {
     }
 
     const tokenHash = hashInvitationToken(trimmedToken);
-    const user = await User.findOne({ invitationTokenHash: tokenHash, status: "pending" });
+    const pendingUser = await User.findOne({ invitationTokenHash: tokenHash, status: "pending" });
 
-    if (!user) {
+    if (!pendingUser) {
       return res.status(400).json({ success: false, message: "Invitation is no longer valid." });
     }
 
-    if (user.invitationExpiresAt && new Date(user.invitationExpiresAt).getTime() < Date.now()) {
+    if (!pendingUser.invitationExpiresAt || new Date(pendingUser.invitationExpiresAt).getTime() <= Date.now()) {
       return res.status(400).json({ success: false, message: "Invitation has expired. Please request a new invitation." });
     }
 
-    if (user.invitationUsedAt) {
+    if (pendingUser.invitationUsedAt) {
       return res.status(400).json({ success: false, message: "Invitation is no longer valid." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    user.password = hashedPassword;
-    user.status = "active";
-    user.invitationTokenHash = null;
-    user.invitationExpiresAt = null;
-    user.invitationUsedAt = new Date();
+    const user = await User.findOneAndUpdate(
+      {
+        invitationTokenHash: tokenHash,
+        status: "pending",
+        invitationExpiresAt: { $gt: new Date() },
+        invitationUsedAt: null,
+      },
+      {
+        $set: {
+          password: hashedPassword,
+          status: "active",
+          invitationTokenHash: null,
+          invitationExpiresAt: null,
+          invitationUsedAt: new Date(),
+        },
+      },
+      { new: true }
+    );
 
-    await user.save();
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invitation is no longer valid." });
+    }
 
     return res.status(200).json({
       success: true,
@@ -287,18 +302,68 @@ const resendInvitation = async (req, res) => {
       return res.status(200).json({
         success: true,
         message: "Invitation email could not be sent.",
-        ...(emailResult.invitationUrl && process.env.NODE_ENV === "development" ? { invitationUrl: emailResult.invitationUrl } : {}),
+        invitationUrl,
       });
     }
 
     return res.status(200).json({
       success: true,
       message: "Invitation sent successfully.",
-      ...(emailResult.invitationUrl && process.env.NODE_ENV === "development" ? { invitationUrl: emailResult.invitationUrl } : {}),
+      invitationUrl,
     });
   } catch (error) {
     console.error("Resend invitation error:", error.message);
     return res.status(500).json({ success: false, message: "Unable to resend invitation" });
+  }
+};
+
+const getInvitationLink = async (req, res) => {
+  try {
+    const normalizedEmail = normalizeEmail(req.body.email);
+    if (!normalizedEmail || !emailPattern.test(normalizedEmail)) {
+      return res.status(400).json({ success: false, message: "A valid email is required" });
+    }
+
+    const pendingUser = await User.findOne({
+      email: normalizedEmail,
+      role: { $in: allowedRoles },
+      status: "pending",
+    });
+
+    if (!pendingUser) {
+      return res.status(404).json({ success: false, message: "Pending employee invitation not found." });
+    }
+
+    const token = generateInvitationToken();
+    const user = await User.findOneAndUpdate(
+      {
+        _id: pendingUser._id,
+        role: { $in: allowedRoles },
+        status: "pending",
+        invitationTokenHash: pendingUser.invitationTokenHash,
+      },
+      {
+        $set: {
+          invitationTokenHash: hashInvitationToken(token),
+          invitationExpiresAt: getInvitationExpiry(),
+          invitationUsedAt: null,
+        },
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(409).json({ success: false, message: "Invitation is no longer pending. Refresh the user list." });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "A new invitation link is ready to share.",
+      invitationUrl: buildInvitationUrl(token),
+    });
+  } catch (error) {
+    console.error("Get invitation link error:", error.message);
+    return res.status(500).json({ success: false, message: "Unable to retrieve invitation link" });
   }
 };
 
@@ -360,6 +425,7 @@ module.exports = {
   login,
   setPassword,
   resendInvitation,
+  getInvitationLink,
   getCurrentUser,
   logout,
   removeUser,

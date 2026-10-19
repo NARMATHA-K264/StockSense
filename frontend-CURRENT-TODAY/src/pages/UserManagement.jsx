@@ -11,6 +11,8 @@ export default function UserManagement() {
   const [error, setError] = useState("");
   const [listError, setListError] = useState("");
   const [success, setSuccess] = useState("");
+  const [invitationUrl, setInvitationUrl] = useState("");
+  const [copiedInvitation, setCopiedInvitation] = useState(false);
   const [busy, setBusy] = useState(false);
   const [resending, setResending] = useState("");
   const [users, setUsers] = useState([]);
@@ -41,11 +43,14 @@ export default function UserManagement() {
     event.preventDefault();
     setError("");
     setSuccess("");
+    setInvitationUrl("");
+    setCopiedInvitation(false);
     setBusy(true);
 
     try {
       const result = await api.users.create(form);
       setSuccess(result.message || "Invitation sent successfully.");
+      setInvitationUrl(result.invitationUrl || "");
       setForm(initialForm);
       setShowForm(false);
       loadUsers();
@@ -59,15 +64,42 @@ export default function UserManagement() {
   const resendInvitation = async (email) => {
     setError("");
     setSuccess("");
+    setInvitationUrl("");
+    setCopiedInvitation(false);
     setResending(email);
     try {
       const result = await api.users.resendInvitation({ email });
       setSuccess(result.message || "Invitation sent successfully.");
+      setInvitationUrl(result.invitationUrl || "");
       loadUsers();
     } catch (requestError) {
       setError(requestError.message);
     } finally {
       setResending("");
+    }
+  };
+
+  const getInvitationLink = async (email) => {
+    setError("");
+    setSuccess("");
+    setInvitationUrl("");
+    setCopiedInvitation(false);
+    try {
+      const result = await api.users.getInvitationLink({ email });
+      setSuccess(result.message || "A new invitation link is ready to share.");
+      setInvitationUrl(result.invitationUrl || "");
+    } catch (requestError) {
+      setError(requestError.message);
+    }
+  };
+
+  const copyInvitationLink = async () => {
+    try {
+      await navigator.clipboard.writeText(invitationUrl);
+      setCopiedInvitation(true);
+      setError("");
+    } catch {
+      setError("Could not access the clipboard. Select and copy the invitation link shown below.");
     }
   };
 
@@ -98,6 +130,13 @@ export default function UserManagement() {
     <ErrorMessage message={listError} />
     <ErrorMessage message={error} />
     <SuccessMessage message={success} />
+    {invitationUrl && <section className="panel" aria-live="polite">
+      <div className="panel-heading"><div><span className="kicker">MANUAL INVITATION</span><h3>Share this one-time link</h3></div></div>
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        <input aria-label="Invitation link" readOnly value={invitationUrl} onFocus={(event) => event.target.select()} style={{ flex: "1 1 320px" }} />
+        <button className="secondary small" type="button" onClick={copyInvitationLink}>{copiedInvitation ? "Copied" : "Copy invitation link"}</button>
+      </div>
+    </section>}
     <section className="user-count-panel">
       <div className="panel-heading"><div><span className="kicker">TEAM SUMMARY</span><h3>Staff by role</h3></div></div>
       <div className="table-panel"><table className="user-count-table"><thead><tr><th>Role</th><th>Count</th></tr></thead><tbody>
@@ -122,7 +161,7 @@ export default function UserManagement() {
     <section className="user-staff-section">
       <div className="section-heading"><span className="kicker">DIRECTORY</span><h3>All Staff</h3></div>
       {loading ? <Loading label="Loading staff" /> : users.length ? <div className="table-panel"><table className="staff-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody>
-        {users.map((user) => <tr key={user._id}><td>{user.name}</td><td>{user.email}</td><td>{user.role === "inventory_staff" ? "Inventory Staff" : user.role[0].toUpperCase() + user.role.slice(1)}</td><td>{user.status === "pending" ? "Pending" : "Active"}</td><td><div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>{user.status === "pending" ? <button type="button" className="secondary small" onClick={() => resendInvitation(user.email)} disabled={resending === user.email}>{resending === user.email ? "Resending..." : "Resend invite"}</button> : null}<button type="button" className="secondary small danger-text" onClick={() => setRemoveTarget(user)} disabled={removing === user.email}>{removing === user.email ? "Removing..." : "Remove"}</button></div></td></tr>)}
+        {users.map((user) => <tr key={user._id}><td>{user.name}</td><td>{user.email}</td><td>{user.role === "inventory_staff" ? "Inventory Staff" : user.role[0].toUpperCase() + user.role.slice(1)}</td><td>{user.status === "pending" ? "Pending" : "Active"}</td><td><div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>{user.status === "pending" ? <><button type="button" className="secondary small" onClick={() => resendInvitation(user.email)} disabled={resending === user.email}>{resending === user.email ? "Resending..." : "Resend invite"}</button><button type="button" className="secondary small" onClick={() => getInvitationLink(user.email)}>Get invitation link</button></> : null}<button type="button" className="secondary small danger-text" onClick={() => setRemoveTarget(user)} disabled={removing === user.email}>{removing === user.email ? "Removing..." : "Remove"}</button></div></td></tr>)}
       </tbody></table></div> : <div className="empty"><strong>No staff accounts yet.</strong></div>}
     </section>
 
