@@ -1,12 +1,13 @@
 const assert = require("node:assert/strict");
 const { afterEach, beforeEach, test } = require("node:test");
+const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const authRoutes = require("../routes/authRoutes");
 const authController = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 const { buildInvitationUrl, hashInvitationToken } = require("../utils/invitationService");
 
-const methodNames = ["create", "findOne", "findOneAndUpdate"];
+const methodNames = ["create", "findById", "findOne", "findOneAndUpdate"];
 let originalMethods;
 let originalFetch;
 let originalConsoleError;
@@ -60,6 +61,7 @@ beforeEach(() => {
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EMAIL_FROM: process.env.EMAIL_FROM,
     FRONTEND_URL: process.env.FRONTEND_URL,
+    JWT_SECRET: process.env.JWT_SECRET,
     NODE_ENV: process.env.NODE_ENV,
   };
   users = [];
@@ -154,6 +156,32 @@ test("admin-only route and role guard protect invitation-link retrieval", () => 
   let allowedNext = false;
   guard({ user: { role: "admin" } }, makeResponse(), () => { allowedNext = true; });
   assert.equal(allowedNext, true);
+});
+
+test("admin-only routes use the database role instead of a client-supplied role", async () => {
+  process.env.JWT_SECRET = "test-only-secret";
+  User.findById = () => ({
+    select: async () => ({ _id: "staff-user-id", role: "manager", status: "active" }),
+  });
+
+  const registrationRoute = authRoutes.stack.find((layer) => layer.route?.path === "/register");
+  const [authenticate, authorizeAdmin] = registrationRoute.route.stack.map((layer) => layer.handle);
+  const request = {
+    headers: {
+      authorization: `Bearer ${jwt.sign({ userId: "staff-user-id", role: "admin" }, process.env.JWT_SECRET)}`,
+    },
+    body: { role: "admin" },
+  };
+  const response = makeResponse();
+  let handlerCalled = false;
+
+  await authenticate(request, response, () => {
+    authorizeAdmin(request, response, () => { handlerCalled = true; });
+  });
+
+  assert.equal(request.user.role, "manager");
+  assert.equal(response.statusCode, 403);
+  assert.equal(handlerCalled, false);
 });
 
 test("a rejected resend retains the existing pending user and returns its active link", async () => {
