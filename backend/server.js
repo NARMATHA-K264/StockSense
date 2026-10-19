@@ -17,7 +17,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 const mongoUri = process.env.MONGO_URI;
-const allowedOrigins = ['http://localhost:5173', 'http://10.131.219.141:5173'];
+const allowedOrigins = ['http://localhost:5173', 'http://10.131.219.141:5173','https://stocksense-isui.onrender.com'];
 
 mongoose.set('strictQuery', true);
 
