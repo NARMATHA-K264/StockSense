@@ -4,7 +4,7 @@ const User = require("../models/User");
 const authRoutes = require("../routes/authRoutes");
 const authController = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
-const { hashInvitationToken } = require("../utils/invitationService");
+const { buildInvitationUrl, hashInvitationToken } = require("../utils/invitationService");
 
 const methodNames = ["create", "findOne", "findOneAndUpdate"];
 let originalMethods;
@@ -40,6 +40,16 @@ const makeResponse = () => ({
 
 const invitationRequest = (email = "staff@example.test") => ({
   body: { email },
+});
+
+test("production invitation URLs use the configured public frontend base", () => {
+  process.env.NODE_ENV = "production";
+  process.env.FRONTEND_URL = "https://stocksense-isui.onrender.com/";
+
+  assert.equal(
+    buildInvitationUrl("secure token"),
+    "https://stocksense-isui.onrender.com/set-password?token=secure%20token"
+  );
 });
 
 beforeEach(() => {
@@ -81,6 +91,7 @@ afterEach(() => {
 });
 
 test("invitation creation keeps a pending user and returns a link when Resend rejects", async () => {
+  process.env.FRONTEND_URL = "https://stocksense-isui.onrender.com";
   User.findOne = async ({ email }) => users.find((user) => user.email === email) || null;
   User.create = async (fields) => {
     const user = makeUser(fields);
@@ -103,6 +114,10 @@ test("invitation creation keeps a pending user and returns a link when Resend re
 
   const token = new URL(response.payload.invitationUrl).searchParams.get("token");
   assert.ok(token);
+  assert.equal(
+    response.payload.invitationUrl,
+    `https://stocksense-isui.onrender.com/set-password?token=${encodeURIComponent(token)}`
+  );
   assert.equal(hashInvitationToken(token), users[0].invitationTokenHash);
   assert.equal(
     new Date(users[0].invitationExpiresAt).getTime() - Date.now() >= 24 * 60 * 60 * 1000 - 1000,
