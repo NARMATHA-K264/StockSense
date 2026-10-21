@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { api } from "../services/api";
 
 const AuthContext = createContext(null);
@@ -39,10 +39,13 @@ export function dashboardPathForRole(role) {
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(readStoredSession);
+  const validatedToken = useRef(null);
 
   const login = async (credentials) => {
     clearStoredSession();
+    validatedToken.current = null;
     setSession({ token: null, user: null, isLoading: false });
+    let loginToken = null;
 
     try {
       const result = await api.login(credentials);
@@ -50,48 +53,78 @@ export function AuthProvider({ children }) {
         throw new Error("Login response did not include a valid user role.");
       }
 
+      loginToken = result.token;
       localStorage.setItem("stocksense_token", result.token);
-      
-      localStorage.setItem("stocksense_user", JSON.stringify(result.user));
-      setSession({ token: result.token, user: result.user, isLoading: false });
-      return result;
+      const currentUser = await api.currentUser();
+      if (!currentUser.user || !roles.includes(currentUser.user.role)) {
+        throw new Error("Login session could not be verified.");
+      }
+      if (localStorage.getItem("stocksense_token") !== loginToken) {
+        throw new Error("Login session changed before it could be verified.");
+      }
+
+      localStorage.setItem("stocksense_user", JSON.stringify(currentUser.user));
+      validatedToken.current = loginToken;
+      setSession({ token: loginToken, user: currentUser.user, isLoading: false });
+      return { ...result, user: currentUser.user };
     } catch (error) {
-      clearStoredSession();
-      setSession({ token: null, user: null, isLoading: false });
+      if (!loginToken || localStorage.getItem("stocksense_token") === loginToken) {
+        clearStoredSession();
+        setSession({ token: null, user: null, isLoading: false });
+      }
       throw error;
     }
   };
   const register = (details) => api.register(details);
-  const logout = () => { clearStoredSession(); setSession({ token: null, user: null, isLoading: false }); };
+  const logout = () => {
+    clearStoredSession();
+    validatedToken.current = null;
+    setSession({ token: null, user: null, isLoading: false });
+  };
 
   useEffect(() => {
     const tokenToValidate = session.token;
-    if (tokenToValidate) {
+    const handleUnauthorized = () => {
+      clearStoredSession();
+      validatedToken.current = null;
+      setSession({ token: null, user: null, isLoading: false });
+    };
+    const handleStorage = (event) => {
+      if (!event.key || event.key === "stocksense_token" || event.key === "stocksense_user") {
+        const nextSession = readStoredSession();
+        if (!nextSession.token) validatedToken.current = null;
+        setSession(nextSession);
+      }
+    };
+
+    window.addEventListener("stocksense:unauthorized", handleUnauthorized);
+    window.addEventListener("storage", handleStorage);
+
+    if (tokenToValidate && session.isLoading && validatedToken.current !== tokenToValidate) {
+      validatedToken.current = tokenToValidate;
       api.currentUser().then((result) => {
         if (localStorage.getItem("stocksense_token") !== tokenToValidate) return;
-        if (!result.user || !roles.includes(result.user.role)) throw new Error("Invalid user session");
+        if (!result.user || !roles.includes(result.user.role)) {
+          clearStoredSession();
+          validatedToken.current = null;
+          setSession({ token: null, user: null, isLoading: false });
+          return;
+        }
         localStorage.setItem("stocksense_user", JSON.stringify(result.user));
         setSession({ token: tokenToValidate, user: result.user, isLoading: false });
       }).catch(() => {
         if (localStorage.getItem("stocksense_token") !== tokenToValidate) return;
         clearStoredSession();
+        validatedToken.current = null;
         setSession({ token: null, user: null, isLoading: false });
       });
     }
 
-    const handleUnauthorized = () => { clearStoredSession(); setSession({ token: null, user: null, isLoading: false }); };
-    const handleStorage = (event) => {
-      if (!event.key || event.key === "stocksense_token" || event.key === "stocksense_user") {
-        setSession(readStoredSession());
-      }
-    };
-    window.addEventListener("stocksense:unauthorized", handleUnauthorized);
-    window.addEventListener("storage", handleStorage);
     return () => {
       window.removeEventListener("stocksense:unauthorized", handleUnauthorized);
       window.removeEventListener("storage", handleStorage);
     };
-  }, [session.token]);
+  }, [session]);
 
   const { token, user, isLoading } = session;
   return <AuthContext.Provider value={{ token, user, isLoading, isAuthenticated: Boolean(token && user && !isLoading), login, register, logout }}>{children}</AuthContext.Provider>;

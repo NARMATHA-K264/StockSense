@@ -1,7 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_URL || "https://stocksense-backend-api-noah.onrender.com/api";
-
-export async function apiRequest(path, options = {}) {
-  const token = localStorage.getItem("stocksense_token");
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  "https://stocksense-backend-api-noah.onrender.com/api";
+export async function apiRequest(path, options = {}, { requiresAuth = true } = {}) {
+  const token = requiresAuth ? localStorage.getItem("stocksense_token") : null;
   const headers = new Headers(options.headers);
   if (options.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -9,8 +10,8 @@ export async function apiRequest(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
   let payload = {};
   try { payload = await response.json(); } catch { payload = {}; }
-  const currentToken = localStorage.getItem("stocksense_token");
-  if (response.status === 401 && (token ? currentToken === token : !currentToken)) {
+  const currentToken = requiresAuth ? localStorage.getItem("stocksense_token") : null;
+  if (response.status === 401 && token && currentToken === token) {
     window.dispatchEvent(new Event("stocksense:unauthorized"));
   }
   if (!response.ok) {
@@ -22,10 +23,10 @@ export async function apiRequest(path, options = {}) {
 }
 
 export const api = {
-  login: (body) => apiRequest("/auth/login", { method: "POST", body: JSON.stringify(body) }),
+  login: (body) => apiRequest("/auth/login", { method: "POST", body: JSON.stringify(body) }, { requiresAuth: false }),
   currentUser: () => apiRequest("/auth/me"),
-  register: (body) => apiRequest("/auth/register", { method: "POST", body: JSON.stringify(body) }),
-  setPassword: (body) => apiRequest("/auth/set-password", { method: "POST", body: JSON.stringify(body) }),
+  register: (body) => apiRequest("/auth/register", { method: "POST", body: JSON.stringify(body) }, { requiresAuth: false }),
+  setPassword: (body) => apiRequest("/auth/set-password", { method: "POST", body: JSON.stringify(body) }, { requiresAuth: false }),
   users: {
     list: () => apiRequest("/auth/users"),
     create: (body) => apiRequest("/auth/register", { method: "POST", body: JSON.stringify(body) }),

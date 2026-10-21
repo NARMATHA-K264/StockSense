@@ -6,6 +6,9 @@ services:
     rootDir: frontend-CURRENT-TODAY
     buildCommand: npm install && npm run build
     staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://stocksense-backend-api-noah.onrender.com/api
     routes:
       - type: rewrite
         source: /*

@@ -51,6 +51,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+
 const startServer = async () => {
   try {
     if (!mongoUri) {
@@ -58,7 +59,7 @@ const startServer = async () => {
     }
 
     await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 30000,
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
       maxPoolSize: 10,
       minPoolSize: 1,
@@ -72,17 +73,28 @@ const startServer = async () => {
       await verifyEmailProvider();
       console.log('Email provider configured');
     } catch (emailError) {
-      console.error('Email provider configuration error:', emailError.message);
+      console.error(
+        'Email provider configuration error:',
+        emailError.message
+      );
     }
 
     app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });
   } catch (error) {
-    console.error('MongoDB connection failed:', error.message);
+    console.error('MongoDB error:', error.message);
+
+    for (const [host, server] of error.reason?.servers ?? []) {
+      console.error('Server:', host);
+      console.error(
+        'Server error:',
+        server.error?.message ?? 'No detailed error available'
+      );
+    }
+
     process.exit(1);
   }
 };
 
 startServer();
-
